@@ -43,8 +43,8 @@ prompt = PromptTemplate(template=prompt_template, input_variables=["context", "q
 # )
 #Lower memory model for faster response
 llm = CTransformers(
-    model="/home/saggy/DocBot_RAG/model/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf", # <-- NEW MODEL
-    model_type="llama", # This can often stay as 'llama' for compatible models
+    model="model/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf", 
+    model_type="llama",
     config={'max_new_tokens': 512, 'temperature': 0.7}
 )
 

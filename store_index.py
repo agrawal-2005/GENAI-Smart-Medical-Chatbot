@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import os
-from pinecone import Pinecone
+from pinecone import Pinecone, ServerlessSpec
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
@@ -34,7 +34,11 @@ def main():
         pc.create_index(
             name=INDEX_NAME,
             dimension=384,  # Corresponds to the embedding model's dimension
-            metric='cosine'
+            metric='cosine',
+            spec=ServerlessSpec(
+                cloud='aws',     # or 'gcp'
+                region='us-east-1' # ensure this matches your .env or Pinecone dashboard
+            )
         )
         print(f"✅ Index '{INDEX_NAME}' created.")
     else:
