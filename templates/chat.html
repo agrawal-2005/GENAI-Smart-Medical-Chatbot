@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Medical Chatbot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="card">
+            <div class="card-header">
+                <div class="avatar-container">
+                    <svg class="avatar-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7v-2h4V7h2v4h4v2h-4v4h-2z"/>
+                    </svg>
+                    <span class="online-indicator"></span>
+                </div>
+                <div class="user-info">
+                    <span>AI Medical Assistant</span>
+                    <p>Online | Ask me anything</p>
+                </div>
+            </div>
+            <div id="chat-body" class="card-body">
+                <div class="d-flex justify-content-start mb-4">
+                    <div class="msg_cotainer">
+                        Hello! I'm your AI Medical Assistant. How can I help you today?
+                        <span class="msg_time">Now</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <form id="message-form" class="input-group">
+                    <input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off" class="form-control" required/>
+                    <button type="submit" id="send-btn" class="send-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            function scrollToBottom() {
+                $('#chat-body').scrollTop($('#chat-body')[0].scrollHeight);
+            }
+
+            // Initial scroll
+            scrollToBottom();
+
+            $("#message-form").on("submit", function(event) {
+                event.preventDefault();
+                const rawText = $("#text").val();
+                if (rawText.trim() === '') {
+                    return;
+                }
+
+                const date = new Date();
+                const str_time = date.getHours() + ":" + String(date.getMinutes()).padStart(2, '0');
+
+                const userHtml = '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' + rawText + '<span class="msg_time_send">' + str_time + '</span></div></div>';
+                $("#chat-body").append(userHtml);
+                $("#text").val("");
+                scrollToBottom();
+
+                // Show typing indicator
+                const botTypingHtml = '<div id="bot-typing" class="d-flex justify-content-start mb-4"><div class="msg_cotainer"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>';
+                $("#chat-body").append(botTypingHtml);
+                scrollToBottom();
+
+                $.ajax({
+                    data: {
+                        msg: rawText,
+                    },
+                    type: "POST",
+                    url: "/get",
+                }).done(function(data) {
+                    const botHtml = '<div class="d-flex justify-content-start mb-4"><div class="msg_cotainer">' + data + '<span class="msg_time">' + str_time + '</span></div></div>';
+                    // Remove typing indicator and add the real response
+                    $("#bot-typing").remove();
+                    $("#chat-body").append(botHtml);
+                    scrollToBottom();
+                }).fail(function() {
+                    const errorHtml = '<div class="d-flex justify-content-start mb-4"><div class="msg_cotainer">Sorry, something went wrong. Please try again.<span class="msg_time">' + str_time + '</span></div></div>';
+                    $("#bot-typing").remove();
+                    $("#chat-body").append(errorHtml);
+                    scrollToBottom();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
