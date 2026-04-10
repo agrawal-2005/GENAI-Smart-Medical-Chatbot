@@ -13,12 +13,21 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda
 from langchain_core.output_parsers import StrOutputParser
 
+print("=" * 50, flush=True)
+print("STARTING APPLICATION...", flush=True)
+print("=" * 50, flush=True)
+
 app = Flask(__name__)
+
+print("Loading environment variables...", flush=True)
 load_dotenv()
 
 PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
 INDEX_NAME = "medical"
 DB_PATH = os.path.join(os.path.dirname(__file__), "chat_history.db")
+
+print(f"Pinecone API Key loaded: {bool(PINECONE_API_KEY)}", flush=True)
+print(f"HF Token loaded: {bool(os.environ.get('HUGGINGFACEHUB_API_TOKEN'))}", flush=True)
 
 
 # ── Database ─────────────────────────────────────────────────────────────────
@@ -52,10 +61,11 @@ def get_db():
 
 
 # ── LLM / RAG setup ──────────────────────────────────────────────────────────
-print("Initializing embeddings and vector store...")
+print("Step 1: Loading embeddings model...", flush=True)
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+print("Step 2: Connecting to Pinecone...", flush=True)
 docsearch = PineconeVectorStore.from_existing_index(INDEX_NAME, embeddings)
-print("✅ Initialization complete.")
+print("Step 3: Setting up LLM...", flush=True)
 
 # ChatPromptTemplate works with ChatOpenAI (returns messages, not raw strings)
 prompt = ChatPromptTemplate.from_messages([
@@ -71,6 +81,8 @@ llm = ChatOpenAI(
     max_tokens=512,
     temperature=0.5,
 )
+
+print("✅ All initialization complete!", flush=True)
 
 # k=3: retrieve 3 chunks for richer context
 retriever = docsearch.as_retriever(search_kwargs={'k': 3})
@@ -268,4 +280,5 @@ def chat():
 
 
 if __name__ == '__main__':
+    print("Step 4: Starting Flask server on port 7860...", flush=True)
     app.run(host="0.0.0.0", port=7860, debug=False)
