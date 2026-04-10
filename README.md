@@ -1,3 +1,12 @@
+---
+title: Medical Chatbot
+emoji: 🏥
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+---
+
 # 🏥 GENAI Smart Medical Chatbot
 
 <div align="center">
