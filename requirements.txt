@@ -23,4 +23,3 @@ huggingface-hub>=0.23.0
 flask==3.0.3
 pypdf==4.2.0
 python-dotenv==1.0.1
--e .
