@@ -280,5 +280,6 @@ def chat():
 
 
 if __name__ == '__main__':
-    print("Step 4: Starting Flask server on port 7860...", flush=True)
-    app.run(host="0.0.0.0", port=7860, debug=False)
+    port = int(os.environ.get("PORT", 7860))
+    print(f"Step 5: Starting Flask server on port {port}...", flush=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
