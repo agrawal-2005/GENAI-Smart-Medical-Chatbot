@@ -6,10 +6,10 @@ import uuid
 from datetime import datetime
 import re
 
-from langchain_community.llms import CTransformers
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import ChatOpenAI
 from langchain_pinecone import PineconeVectorStore
-from langchain.prompts import PromptTemplate
+from langchain.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda
 from langchain_core.output_parsers import StrOutputParser
 
@@ -57,28 +57,19 @@ embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-
 docsearch = PineconeVectorStore.from_existing_index(INDEX_NAME, embeddings)
 print("✅ Initialization complete.")
 
-# Prompt instructs the model to lead with specific steps, disclaimer at the end only.
-prompt_template = """<|system|>
-You are a medical assistant. Give specific, actionable answers using the context provided. List steps or ranges clearly. Only add "consult a doctor" as a brief note at the end, never as the main answer.</s>
-<|user|>
-Context:
-{context}
+# ChatPromptTemplate works with ChatOpenAI (returns messages, not raw strings)
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a medical assistant. Give specific, actionable answers using the context provided. List steps or ranges clearly. Only add 'consult a doctor' as a brief note at the end, never as the main answer."),
+    ("human", "Context:\n{context}\n\n{history}Question: {question}"),
+])
 
-{history}User: {question}</s>
-<|assistant|>
-"""
-prompt = PromptTemplate(template=prompt_template, input_variables=["context", "history", "question"])
-
-llm = CTransformers(
-    model="model/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
-    model_type="llama",
-    config={
-        'max_new_tokens': 300,
-        'temperature': 0.5,
-        'context_length': 2048,
-        # Include plaintext "User:" so the model can't start a new turn
-        'stop': ['</s>', '<|user|>', '<|system|>', '\nUser:', '\n\nUser:', '\nAssistant:', '\nMedical Context:']
-    }
+# Uses HuggingFace router (OpenAI-compatible) — no local model needed
+llm = ChatOpenAI(
+    model="meta-llama/Llama-3.1-8B-Instruct",
+    base_url="https://router.huggingface.co/v1",
+    api_key=os.environ.get('HUGGINGFACEHUB_API_TOKEN'),
+    max_tokens=512,
+    temperature=0.5,
 )
 
 # k=3: retrieve 3 chunks for richer context

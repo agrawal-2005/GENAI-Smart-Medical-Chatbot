@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -251,6 +253,23 @@
         .msg-row.user .msg-bubble { background: #2563eb; color: #fff; border-bottom-right-radius: 4px; }
         .msg-row.bot  .msg-bubble { background: #f3f4f6; color: #111827; border-bottom-left-radius: 4px; }
 
+        /* Markdown rendered inside bot bubbles */
+        .msg-row.bot .msg-bubble p  { margin: 0 0 8px; }
+        .msg-row.bot .msg-bubble p:last-child { margin-bottom: 0; }
+        .msg-row.bot .msg-bubble strong { font-weight: 600; color: #111827; }
+        .msg-row.bot .msg-bubble em { font-style: italic; }
+        .msg-row.bot .msg-bubble ul,
+        .msg-row.bot .msg-bubble ol  { padding-left: 18px; margin: 6px 0; }
+        .msg-row.bot .msg-bubble li  { margin-bottom: 4px; }
+        .msg-row.bot .msg-bubble h1,
+        .msg-row.bot .msg-bubble h2,
+        .msg-row.bot .msg-bubble h3  { font-weight: 600; margin: 10px 0 4px; font-size: 1em; color: #1e3a8a; }
+        .msg-row.bot .msg-bubble code {
+            background: #e5e7eb; border-radius: 4px;
+            padding: 1px 5px; font-size: 12px; font-family: monospace;
+        }
+        .msg-row.bot .msg-bubble hr  { border: none; border-top: 1px solid #d1d5db; margin: 8px 0; }
+
         .msg-time { font-size: 11px; color: #9ca3af; margin-top: 4px; }
 
         /* Typing dots */
@@ -434,6 +453,10 @@
         </div>`;
     }
 
+    function renderMarkdown(text) {
+        return DOMPurify.sanitize(marked.parse(text));
+    }
+
     function msgHTML(role, content, time) {
         time = time || getTime();
         if (role === 'user') {
@@ -447,7 +470,7 @@
         return `<div class="msg-row bot">
             <div class="bot-avatar">AI</div>
             <div class="msg-wrapper">
-                <div class="msg-bubble">${esc(content)}</div>
+                <div class="msg-bubble">${renderMarkdown(content)}</div>
                 <div class="msg-time">${time}</div>
             </div>
         </div>`;
