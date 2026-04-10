@@ -19,9 +19,9 @@
 
 ## 📸 Screenshots
 
-| Chat Interface | Chat History Sidebar |
-|---|---|
-| ![Chat Interface](screenshots/chat.png) | ![Sidebar](screenshots/sidebar.png) |
+| Chat Interface & Chat History Sidebar |
+|---|
+| ![Chat Interface](screenshots/chat.png)|
 
 ---
 
