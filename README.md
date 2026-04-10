@@ -2,11 +2,13 @@
 
 <div align="center">
 
-![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=for-the-badge&logo=flask&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-0.2-1C3C3C?style=for-the-badge&logo=chainlink&logoColor=white)
 ![Pinecone](https://img.shields.io/badge/Pinecone-VectorDB-00B388?style=for-the-badge)
 ![HuggingFace](https://img.shields.io/badge/HuggingFace-Llama%203.1-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![HF Spaces](https://img.shields.io/badge/HF%20Spaces-Deployed-FF6B35?style=for-the-badge&logo=huggingface&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 **An AI-powered medical assistant that answers health questions using Retrieval-Augmented Generation (RAG), with a full chat history sidebar, conversation memory, and a modern UI.**
@@ -43,7 +45,8 @@
 
 | Layer | Technology |
 |---|---|
-| **Backend** | Python 3.9+, Flask 3.0 |
+| **Backend** | Python 3.10+, Flask 3.0 |
+| **Containerization** | Docker (HuggingFace Spaces ready, port 7860) |
 | **LLM** | Llama 3.1 8B Instruct via HuggingFace Inference API |
 | **RAG Framework** | LangChain 0.2 |
 | **Vector Database** | Pinecone (index: `medical`) |
@@ -57,6 +60,7 @@
 
 ```
 GENAI-Smart-Medical-Chatbot/
+├── Dockerfile               # Docker image — used for HuggingFace Spaces deployment
 ├── app.py                   # Flask app — routes, RAG chain, SQLite logic
 ├── store_index.py           # Script to embed documents and populate Pinecone
 ├── requirements.txt         # Python dependencies
@@ -148,7 +152,17 @@ python app.py
 Open your browser and visit:
 
 ```
-http://localhost:8080
+http://localhost:7860
+```
+
+#### Or run with Docker
+
+```bash
+docker build -t medical-chatbot .
+docker run -p 7860:7860 \
+  -e HUGGINGFACEHUB_API_TOKEN=your_token \
+  -e PINECONE_API_KEY=your_key \
+  medical-chatbot
 ```
 
 ---
@@ -178,7 +192,7 @@ http://localhost:8080
 ### Example: Send a message
 
 ```bash
-curl -X POST http://localhost:8080/get \
+curl -X POST http://localhost:7860/get \
   -F "msg=What is my target blood sugar range?" \
   -F "conversation_id=optional-uuid-here"
 ```
@@ -225,24 +239,45 @@ User Message
 
 This app requires **no local model download** — inference runs entirely in the cloud via the HuggingFace API.
 
-### HuggingFace Spaces
+### ⭐ HuggingFace Spaces (Recommended)
 
-1. Fork this repo
-2. Create a new Space (SDK: Docker or Gradio)
-3. Add `HUGGINGFACEHUB_API_TOKEN` and `PINECONE_API_KEY` as Space secrets
-4. Push your code
+The project includes a `Dockerfile` configured for HF Spaces (port 7860).
+
+1. Go to [huggingface.co/new-space](https://huggingface.co/new-space)
+2. Choose **Docker** as the Space SDK
+3. Link your GitHub repo **or** clone the Space and push manually:
+   ```bash
+   git remote add space https://huggingface.co/spaces/YOUR_USERNAME/YOUR_SPACE_NAME
+   git push space main
+   ```
+4. Add secrets in **Settings → Variables and Secrets**:
+   | Secret | Value |
+   |---|---|
+   | `HUGGINGFACEHUB_API_TOKEN` | Your HF token |
+   | `PINECONE_API_KEY` | Your Pinecone key |
+5. The Space will build the Docker image and go live automatically at:
+   ```
+   https://huggingface.co/spaces/YOUR_USERNAME/YOUR_SPACE_NAME
+   ```
+
+> ⚠️ SQLite chat history will reset on each Space restart. For persistent history, replace SQLite with a hosted database (PostgreSQL, MongoDB Atlas, etc.)
+
+### 🐳 Docker (Self-hosted)
+
+```bash
+docker build -t medical-chatbot .
+docker run -p 7860:7860 \
+  -e HUGGINGFACEHUB_API_TOKEN=your_token \
+  -e PINECONE_API_KEY=your_key \
+  medical-chatbot
+```
 
 ### Render / Railway
 
 1. Connect your GitHub repo
-2. Set build command: `pip install -r requirements.txt`
-3. Set start command: `python app.py`
-4. Add environment variables in the dashboard
-
-> For production, set `debug=False` in `app.py` and use a production WSGI server like **gunicorn**:
-> ```bash
-> gunicorn -w 2 -b 0.0.0.0:8080 app:app
-> ```
+2. Set start command: `python app.py`
+3. Add `HUGGINGFACEHUB_API_TOKEN` and `PINECONE_API_KEY` as environment variables
+4. Set port to `7860`
 
 ---
 
