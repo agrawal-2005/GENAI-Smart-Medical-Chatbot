@@ -15,11 +15,14 @@ develop-eggs/
 dist/# --- My Custom Ignores ---
 
 # Ignore large model files
-.model/llama-2-7b-chat.ggmlv3.q4_0.bin
-.model/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+model/
+!model/instructions.txt
 
-# Ignore large data files
-data/
+# Ignore large data files (PDFs) but keep curated text guides
+data/*.pdf
+
+# SQLite chat history (runtime data, not source)
+chat_history.db
 downloads/
 eggs/
 .eggs/
